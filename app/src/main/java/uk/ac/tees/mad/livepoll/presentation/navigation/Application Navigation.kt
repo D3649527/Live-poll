@@ -1,5 +1,6 @@
 package uk.ac.tees.mad.livepoll.presentation.navigation
 
+import CreatePoll
 import androidx.compose.runtime.Composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -7,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import uk.ac.tees.mad.livepoll.presentation.ui.LoginScreen
+import uk.ac.tees.mad.livepoll.presentation.ui.PollScreen
 import uk.ac.tees.mad.livepoll.presentation.ui.SignUp
 import uk.ac.tees.mad.livepoll.presentation.ui.SplashScreen
 import uk.ac.tees.mad.livepoll.presentation.viewmodel.PollViewModel
@@ -35,6 +37,12 @@ fun ApplicationNavigation(){
         }
         composable(route = ApplicationNavigation.Signup.route){
             SignUp(vm = viewModel,navController = navController)
+        }
+        composable(route = ApplicationNavigation.Poll.route){
+            PollScreen(navController)
+        }
+        composable(route = ApplicationNavigation.Create.route){
+            CreatePoll()
         }
     }
 }
