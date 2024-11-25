@@ -7,28 +7,47 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import uk.ac.tees.mad.livepoll.navigateWithBackStack
+import uk.ac.tees.mad.livepoll.navigateWithoutBackStack
 import uk.ac.tees.mad.livepoll.presentation.navigation.ApplicationNavigation
+import uk.ac.tees.mad.livepoll.presentation.viewmodel.PollViewModel
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(vm : PollViewModel, navController: NavController) {
+    val context = LocalContext.current
     val email = remember {
         mutableStateOf("")
     }
     val password = remember {
         mutableStateOf("")
+    }
+    var passwordVisible by remember { mutableStateOf(false) }
+    val isLoading = vm.isLoading.value
+    val isLoggedIn = vm.isLoggedIn.value
+    if (isLoggedIn){
+        navigateWithoutBackStack(navController, ApplicationNavigation.Poll.route)
     }
     Column(modifier = Modifier
         .fillMaxSize()
@@ -45,7 +64,20 @@ fun LoginScreen(navController: NavController) {
         Spacer(modifier = Modifier.height(20.dp))
         OutlinedTextField(value = password.value, onValueChange = {password.value = it}, label = { Text(
             text = "Password"
-        )},  modifier = Modifier.fillMaxWidth())
+        )
+        }, visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon =   {
+                val image = if (passwordVisible)
+                    Icons.Filled.Visibility
+                else
+                    Icons.Filled.VisibilityOff
+
+                IconButton(onClick = {
+                    passwordVisible = !passwordVisible
+                }) {
+                    Icon(imageVector = image, contentDescription = if (passwordVisible) "Hide password" else "Show password")
+                }
+            },  modifier = Modifier.fillMaxWidth())
         Spacer(modifier = Modifier.height(20.dp))
         Button(onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(5.dp),colors = ButtonDefaults.buttonColors(
