@@ -58,9 +58,15 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+    implementation (libs.firebase.messaging)
 
+    //work manager
+    implementation ("androidx.work:work-runtime-ktx:2.7.1")
+
+    //Material3
     implementation ("androidx.compose.material:material:1.7.0")
     implementation ("androidx.compose.material:material-icons-extended:1.7.0")
+    implementation(libs.androidx.hilt.common)
 
     //navigation
     val nav_version = "2.7.7"
