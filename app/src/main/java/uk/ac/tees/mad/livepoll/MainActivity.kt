@@ -1,14 +1,18 @@
 package uk.ac.tees.mad.livepoll
 
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.work.WorkManager
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.AndroidEntryPoint
 import uk.ac.tees.mad.livepoll.domain.workmanager.schedulePollStatusUpdate
 import uk.ac.tees.mad.livepoll.presentation.navigation.ApplicationNavigation
@@ -23,36 +27,43 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        createNotificationChannel()
+        requestNotificationPermission()
         schedulePollStatusUpdate(this)
-
-        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
-                return@addOnCompleteListener
-            }
-            val token = task.result
-            Log.d("FCM", "FCM Token: $token")
-            storeFCMToken(token)
-        }
-
+        enableEdgeToEdge()
         setContent {
             LivePollTheme {
                 ApplicationNavigation()
             }
         }
     }
+    private fun createNotificationChannel() {
+        val channel = NotificationChannel(
+            "poll_channel",
+            "New Poll",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Notification"
+        }
+        val notificationManager: NotificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+    }
 
-    private fun storeFCMToken(token: String) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        FirebaseFirestore.getInstance().collection(USER).document(userId)
-            .update("fcmToken", token)
-            .addOnSuccessListener {
-                Log.d("FCM", "FCM Token stored successfully")
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    0
+                )
             }
-            .addOnFailureListener { e ->
-                Log.d("FCM", "Error storing FCM Token: ${e.message}")
-            }
+        }
     }
 }
 
