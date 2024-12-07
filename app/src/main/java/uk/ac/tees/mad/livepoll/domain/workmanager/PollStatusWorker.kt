@@ -1,7 +1,6 @@
 package uk.ac.tees.mad.livepoll.domain.workmanager
 
 import android.content.Context
-import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -20,30 +19,22 @@ class PollStatusWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
-            val currentTime = com.google.firebase.Timestamp.now()
-            Log.d("PollWorker", "Current time: $currentTime")
+            val currentTime = Calendar.getInstance().timeInMillis
 
             val activePolls = firestore.collection("polls")
                 .whereEqualTo("status", "active")
                 .whereLessThan("endTime", currentTime)
                 .get()
                 .await()
-
-            Log.d("PollWorker", "Fetched ${activePolls.documents.size} active polls")
-
             activePolls.documents.forEach { document ->
-                Log.d("PollWorker", "Archiving poll with id: ${document.id}")
                 firestore.collection("polls")
                     .document(document.id)
                     .update("status", "archive")
                     .await()
-                Log.d("PollWorker", "Poll ${document.id} archived successfully")
             }
 
-            Log.d("PollWorker", "Worker completed successfully")
             Result.success()
         } catch (e: Exception) {
-            Log.e("PollWorker", "Error in worker", e)
             Result.failure()
         }
     }
